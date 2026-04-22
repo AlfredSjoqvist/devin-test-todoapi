@@ -10,6 +10,11 @@ export interface CreateTodoInput {
   completed?: boolean;
 }
 
+export interface UpdateTodoInput {
+  title?: string;
+  completed?: boolean;
+}
+
 export interface ListOptions {
   page: number;
   limit: number;

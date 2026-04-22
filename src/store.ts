@@ -1,4 +1,9 @@
-import type { CreateTodoInput, ListOptions, Todo } from "./types";
+import type {
+  CreateTodoInput,
+  ListOptions,
+  Todo,
+  UpdateTodoInput,
+} from "./types";
 
 export class TodoStore {
   private todos: Map<number, Todo> = new Map();
@@ -19,6 +24,18 @@ export class TodoStore {
     return this.todos.get(id);
   }
 
+  update(id: number, patch: UpdateTodoInput): Todo | undefined {
+    const existing = this.todos.get(id);
+    if (!existing) return undefined;
+    const updated: Todo = {
+      ...existing,
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.completed !== undefined ? { completed: patch.completed } : {}),
+    };
+    this.todos.set(id, updated);
+    return updated;
+  }
+
   delete(id: number): boolean {
     return this.todos.delete(id);
   }
@@ -27,7 +44,7 @@ export class TodoStore {
     const all = Array.from(this.todos.values()).sort(
       (a, b) => a.createdAt - b.createdAt
     );
-    const start = opts.page * opts.limit;
+    const start = (opts.page - 1) * opts.limit;
     const end = start + opts.limit;
     return { items: all.slice(start, end), total: all.length };
   }
