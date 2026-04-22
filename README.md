@@ -27,12 +27,10 @@ npm test
 - `POST   /todos`                       create a todo
 - `GET    /todos?page=<n>&limit=<m>`    list todos, paginated
 - `GET    /todos/:id`                   fetch a single todo
+- `PATCH  /todos/:id`                   update title and/or completed
 - `DELETE /todos/:id`                   delete a todo
 
 Request / response shapes are documented in
 [`docs/API.md`](docs/API.md).
 
-## Status
 
-CI is currently red — the TypeScript build fails and several tests fail. See
-the test output for details.

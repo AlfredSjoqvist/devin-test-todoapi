@@ -75,6 +75,97 @@ describe("DELETE /todos/:id", () => {
   });
 });
 
+describe("PATCH /todos/:id", () => {
+  it("updates only the title and returns 200", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "old" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ title: "new" });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({
+      id: create.body.id,
+      title: "new",
+      completed: false,
+    });
+  });
+
+  it("updates only completed and returns 200", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ completed: true });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({
+      id: create.body.id,
+      title: "x",
+      completed: true,
+    });
+  });
+
+  it("updates both title and completed and returns 200", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ title: "y", completed: true });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ title: "y", completed: true });
+  });
+
+  it("returns 404 for unknown id", async () => {
+    const { app } = buildApp();
+    const r = await request(app).patch("/todos/9999").send({ title: "x" });
+    expect(r.status).toBe(404);
+  });
+
+  it("returns 400 for empty-string title", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ title: "" });
+    expect(r.status).toBe(400);
+  });
+
+  it("returns 400 for whitespace-only title", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ title: "   " });
+    expect(r.status).toBe(400);
+  });
+
+  it("returns 400 for non-boolean completed", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ completed: "yes" });
+    expect(r.status).toBe(400);
+  });
+
+  it("returns 400 for empty patch body", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app).patch(`/todos/${create.body.id}`).send({});
+    expect(r.status).toBe(400);
+  });
+
+  it("ignores unknown fields and updates only title/completed", async () => {
+    const { app } = buildApp();
+    const create = await request(app).post("/todos").send({ title: "x" });
+    const r = await request(app)
+      .patch(`/todos/${create.body.id}`)
+      .send({ title: "y", foo: "bar" });
+    expect(r.status).toBe(200);
+    expect(r.body).toMatchObject({ title: "y", completed: false });
+    expect(r.body.foo).toBeUndefined();
+  });
+});
+
 describe("GET /todos (pagination)", () => {
   async function seed(app: express.Express, n: number) {
     for (let i = 1; i <= n; i++) {
